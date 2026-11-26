@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Agendar cita médica | Centro Médico{% endblock %}
+
+{% block content %}
+<section class="container py-4">
+    <h1 class="mb-4">Agendar cita médica</h1>
+
+    {% if not patients %}
+    <p class="alert alert-warning">
+        <a href="{{ url_for('patients.new_patient') }}" class="alert-link">Registra un paciente</a>
+        para poder agendar una cita.
+    </p>
+    {% endif %}
+    {% if not doctors %}
+    <p class="alert alert-warning">Carga un médico en el catálogo para poder agendar una cita.</p>
+    {% endif %}
+
+    <div class="card">
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('appointments.new_appointment') }}" class="row g-3">
+                <div class="col-12 col-md-6">
+                    <label for="paciente_id" class="form-label">Paciente</label>
+                    <select id="paciente_id" name="paciente_id" class="form-select" required>
+                        <option value="" disabled{% if not values.paciente_id %} selected{% endif %}>Selecciona un paciente</option>
+                        {% for patient in patients %}
+                        <option value="{{ patient._id }}"{% if patient._id|string == values.paciente_id %} selected{% endif %}>
+                            {{ patient.nombre }} &middot; DNI {{ patient.dni }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-12 col-md-6">
+                    <label for="medico_id" class="form-label">Médico</label>
+                    <select id="medico_id" name="medico_id" class="form-select" required>
+                        <option value="" disabled{% if not values.medico_id %} selected{% endif %}>Selecciona un médico</option>
+                        {% for doctor in doctors %}
+                        <option value="{{ doctor._id }}"{% if doctor._id|string == values.medico_id %} selected{% endif %}>
+                            {{ doctor.nombre }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-12 col-md-6">
+                    <label for="fecha" class="form-label">Fecha</label>
+                    <input type="date" id="fecha" name="fecha" value="{{ values.fecha }}" class="form-control" required>
+                </div>
+                <div class="col-12 col-md-6">
+                    <label for="hora" class="form-label">Hora</label>
+                    <input type="time" id="hora" name="hora" value="{{ values.hora }}" class="form-control"
+                           min="{{ opening_time }}" max="{{ closing_time }}" aria-describedby="horario" required>
+                    <div id="horario" class="form-text">Horario de atención de 08:00 a 18:00.</div>
+                </div>
+                <div class="col-12 d-flex flex-column flex-sm-row justify-content-end gap-2 pt-2">
+                    <a href="{{ url_for('patients.list_patients') }}" class="btn btn-secondary">Cancelar</a>
+                    <button type="submit" class="btn btn-primary"{% if not patients or not doctors %} disabled{% endif %}>
+                        Guardar cita
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}
