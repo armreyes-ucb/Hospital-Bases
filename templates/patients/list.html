@@ -56,16 +56,32 @@
                         <th scope="col">Teléfono</th>
                         <th scope="col">Fecha de nacimiento</th>
                         <th scope="col">Fecha de registro</th>
+                        <th scope="col" class="text-end">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for patient in patients %}
                     <tr>
-                        <td class="fw-semibold">{{ patient.nombre }}</td>
+                        <td class="fw-semibold">
+                            <a href="{{ url_for('patients.detail_patient', patient_id=patient.id) }}"
+                               class="text-decoration-none">{{ patient.nombre }}</a>
+                        </td>
                         <td><span class="identifier">{{ patient.dni }}</span></td>
                         <td>{{ patient.telefono }}</td>
                         <td>{{ patient.fecha_nacimiento }}</td>
                         <td>{{ patient.fecha_registro.strftime('%d/%m/%Y %H:%M') if patient.fecha_registro else '—' }}</td>
+                        <td class="text-end text-nowrap">
+                            <a href="{{ url_for('patients.detail_patient', patient_id=patient.id) }}"
+                               class="btn btn-outline-secondary btn-sm">Ver</a>
+                            <a href="{{ url_for('patients.edit_patient', patient_id=patient.id) }}"
+                               class="btn btn-outline-primary btn-sm">Editar</a>
+                            <button type="button" class="btn btn-outline-danger btn-sm delete-patient"
+                                    data-patient-id="{{ patient.id }}"
+                                    data-patient-name="{{ patient.nombre }}"
+                                    data-patient-dni="{{ patient.dni }}"
+                                    data-patient-url="{{ url_for('patients.delete_patient', patient_id=patient.id) }}"
+                                    data-bs-toggle="modal" data-bs-target="#delete-patient-modal">Eliminar</button>
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -110,6 +126,28 @@
         {% endif %}
     </div>
 </section>
+
+<div class="modal fade" id="delete-patient-modal" tabindex="-1" aria-labelledby="delete-patient-title" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title h5" id="delete-patient-title">¿Eliminar paciente?</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-1">Vas a eliminar el registro de <strong id="delete-patient-name"></strong>
+                    (<span id="delete-patient-dni"></span>).</p>
+                <p class="text-danger mb-0">Esta acción no se puede deshacer.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form method="POST" id="delete-patient-form" action="#" class="d-inline">
+                    <button type="submit" class="btn btn-danger">Eliminar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
@@ -122,6 +160,19 @@
     input.addEventListener('input', () => {
         window.clearTimeout(timer);
         timer = window.setTimeout(() => form.requestSubmit(), 350);
+    });
+
+    const deleteModal = document.getElementById('delete-patient-modal');
+    const deleteForm = document.getElementById('delete-patient-form');
+    const deleteName = document.getElementById('delete-patient-name');
+    const deleteDni = document.getElementById('delete-patient-dni');
+
+    deleteModal.addEventListener('show.bs.modal', (event) => {
+        const trigger = event.relatedTarget;
+        if (!trigger) return;
+        deleteName.textContent = trigger.dataset.patientName || '';
+        deleteDni.textContent = trigger.dataset.patientDni || '';
+        deleteForm.action = trigger.dataset.patientUrl || '#';
     });
 })();
 </script>

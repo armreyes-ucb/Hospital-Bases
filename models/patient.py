@@ -9,7 +9,9 @@ class Patient:
         fecha_nacimiento,
         telefono,
         fecha_registro=None,
+        id=None,
     ):
+        self.id = id
         self.nombre = nombre
         self.dni = dni
         self.fecha_nacimiento = fecha_nacimiento
@@ -27,10 +29,12 @@ class Patient:
 
     @staticmethod
     def from_mongo(document):
+        document_id = document.get("_id")
         return Patient(
-            document.get("nombre", ""),
-            document.get("dni", ""),
-            document.get("fecha_nacimiento", ""),
-            document.get("telefono", ""),
-            document.get("fecha_registro", datetime.utcnow()),
+            nombre=document.get("nombre", ""),
+            dni=document.get("dni", ""),
+            fecha_nacimiento=document.get("fecha_nacimiento", ""),
+            telefono=document.get("telefono", ""),
+            fecha_registro=document.get("fecha_registro", datetime.utcnow()),
+            id=str(document_id) if document_id is not None else None,
         )

@@ -9,7 +9,7 @@ db = dbConnection()
 products = db["products"]
 
 
-@products_bp.route("/")
+@products_bp.route("/productos")
 def home():
     products_received = products.find()
     return render_template("products/index.html", products=products_received)

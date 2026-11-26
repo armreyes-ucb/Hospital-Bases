@@ -1,7 +1,9 @@
 import re
 from datetime import date
 
-from flask import Blueprint, flash, redirect, render_template, request, url_for
+from bson import ObjectId
+from bson.errors import InvalidId
+from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
 
 from database import dbConnection
 from models.patient import Patient
@@ -10,6 +12,61 @@ from models.patient import Patient
 patients_bp = Blueprint("patients", __name__)
 db = dbConnection()
 patients = db["patients"]
+
+
+def _parse_object_id(patient_id):
+    try:
+        return ObjectId(patient_id)
+    except (InvalidId, TypeError):
+        return None
+
+
+def _get_patient_or_404(patient_id):
+    object_id = _parse_object_id(patient_id)
+    if object_id is None:
+        abort(404)
+    document = patients.find_one({"_id": object_id})
+    if document is None:
+        abort(404)
+    return document
+
+
+def _validate_patient_form(form, exclude_id=None):
+    nombre = form.get("nombre", "").strip()
+    dni = form.get("dni", "").strip()
+    fecha_nacimiento = form.get("fecha_nacimiento", "").strip()
+    telefono = form.get("telefono", "").strip()
+
+    values = {
+        "nombre": nombre,
+        "dni": dni,
+        "fecha_nacimiento": fecha_nacimiento,
+        "telefono": telefono,
+    }
+
+    if not nombre or not dni or not fecha_nacimiento or not telefono:
+        return values, "Todos los campos son obligatorios"
+    if len(nombre) < 3 or len(nombre) > 120:
+        return values, "El nombre debe tener entre 3 y 120 caracteres"
+    if not re.fullmatch(r"\d{8}", dni):
+        return values, "El DNI debe contener exactamente 8 dígitos"
+    if not re.fullmatch(r"\d{9}", telefono):
+        return values, "El teléfono debe contener exactamente 9 dígitos"
+
+    try:
+        birth_date = date.fromisoformat(fecha_nacimiento)
+    except ValueError:
+        return values, "La fecha de nacimiento no es válida"
+    if birth_date > date.today():
+        return values, "La fecha de nacimiento no puede ser futura"
+
+    duplicate_query = {"dni": dni}
+    if exclude_id is not None:
+        duplicate_query["_id"] = {"$ne": exclude_id}
+    if patients.find_one(duplicate_query):
+        return values, f"El DNI {dni} ya está registrado"
+
+    return values, None
 
 
 @patients_bp.route("/")
@@ -70,59 +127,92 @@ def new_patient():
     if request.method == "GET":
         return render_template("patients/new.html", today=date.today().isoformat())
 
-    nombre = request.form.get("nombre", "").strip()
-    dni = request.form.get("dni", "").strip()
-    fecha_nacimiento = request.form.get("fecha_nacimiento", "").strip()
-    telefono = request.form.get("telefono", "").strip()
-
-    today = date.today()
-    validation_error = None
-    if not nombre or not dni or not fecha_nacimiento or not telefono:
-        validation_error = "Todos los campos son obligatorios"
-    elif len(nombre) < 3 or len(nombre) > 120:
-        validation_error = "El nombre debe tener entre 3 y 120 caracteres"
-    elif not re.fullmatch(r"\d{8}", dni):
-        validation_error = "El DNI debe contener exactamente 8 dígitos"
-    elif not re.fullmatch(r"\d{9}", telefono):
-        validation_error = "El teléfono debe contener exactamente 9 dígitos"
-    else:
-        try:
-            birth_date = date.fromisoformat(fecha_nacimiento)
-            if birth_date > today:
-                validation_error = "La fecha de nacimiento no puede ser futura"
-        except ValueError:
-            validation_error = "La fecha de nacimiento no es válida"
+    values, validation_error = _validate_patient_form(request.form)
 
     if validation_error:
         flash(validation_error, "danger")
         return render_template(
             "patients/new.html",
-            nombre=nombre,
-            dni=dni,
-            fecha_nacimiento=fecha_nacimiento,
-            telefono=telefono,
-            today=today.isoformat(),
-        )
-
-    existing = patients.find_one({"dni": dni})
-    if existing:
-        flash(f"El DNI {dni} ya está registrado", "danger")
-        return render_template(
-            "patients/new.html",
-            nombre=nombre,
-            dni=dni,
-            fecha_nacimiento=fecha_nacimiento,
-            telefono=telefono,
             today=date.today().isoformat(),
+            **values,
         )
 
     patient = Patient(
-        nombre=nombre,
-        dni=dni,
-        fecha_nacimiento=fecha_nacimiento,
-        telefono=telefono,
+        nombre=values["nombre"],
+        dni=values["dni"],
+        fecha_nacimiento=values["fecha_nacimiento"],
+        telefono=values["telefono"],
     )
     patients.insert_one(patient.toDBCollection())
-    flash(f"Paciente {nombre} registrado exitosamente", "success")
+    flash(f"Paciente {values['nombre']} registrado exitosamente", "success")
 
-    return redirect(url_for("patients.new_patient"))
+    return redirect(url_for("patients.list_patients"))
+
+
+@patients_bp.route("/pacientes/<string:patient_id>")
+def detail_patient(patient_id):
+    document = _get_patient_or_404(patient_id)
+    patient = Patient.from_mongo(document)
+    return render_template("patients/detail.html", patient=patient)
+
+
+@patients_bp.route("/pacientes/<string:patient_id>/editar", methods=["GET", "POST"])
+def edit_patient(patient_id):
+    object_id = _parse_object_id(patient_id)
+    if object_id is None:
+        abort(404)
+    document = patients.find_one({"_id": object_id})
+    if document is None:
+        abort(404)
+
+    if request.method == "GET":
+        patient = Patient.from_mongo(document)
+        return render_template(
+            "patients/edit.html",
+            patient=patient,
+            today=date.today().isoformat(),
+        )
+
+    values, validation_error = _validate_patient_form(
+        request.form, exclude_id=object_id
+    )
+
+    if validation_error:
+        flash(validation_error, "danger")
+        patient = Patient(
+            nombre=values["nombre"],
+            dni=values["dni"],
+            fecha_nacimiento=values["fecha_nacimiento"],
+            telefono=values["telefono"],
+            fecha_registro=document.get("fecha_registro"),
+            id=patient_id,
+        )
+        return render_template(
+            "patients/edit.html",
+            patient=patient,
+            today=date.today().isoformat(),
+        )
+
+    patients.update_one(
+        {"_id": object_id},
+        {
+            "$set": {
+                "nombre": values["nombre"],
+                "dni": values["dni"],
+                "fecha_nacimiento": values["fecha_nacimiento"],
+                "telefono": values["telefono"],
+            }
+        },
+    )
+    flash(f"Paciente {values['nombre']} actualizado correctamente", "success")
+
+    return redirect(url_for("patients.detail_patient", patient_id=patient_id))
+
+
+@patients_bp.route("/pacientes/<string:patient_id>/eliminar", methods=["POST"])
+def delete_patient(patient_id):
+    document = _get_patient_or_404(patient_id)
+    patients.delete_one({"_id": document["_id"]})
+    flash(f"Paciente {document.get('nombre', '')} eliminado correctamente", "success")
+
+    return redirect(url_for("patients.list_patients"))

@@ -3,10 +3,31 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{% block title %}Gestión de productos{% endblock %}</title>
+    <title>{% block title %}Centro Médico{% endblock %}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand fw-semibold" href="{{ url_for('patients.list_patients') }}">Centro Médico</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#main-nav"
+                    aria-controls="main-nav" aria-expanded="false" aria-label="Mostrar navegación">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="main-nav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link{% if request.blueprint == 'patients' %} active{% endif %}"
+                           href="{{ url_for('patients.list_patients') }}">Pacientes</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link{% if request.blueprint == 'products' %} active{% endif %}"
+                           href="{{ url_for('products.home') }}">Productos</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
         <div class="container mt-3">
@@ -17,6 +38,7 @@
         {% endif %}
     {% endwith %}
     {% block content %}{% endblock %}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js"></script>
     {% block scripts %}{% endblock %}
 </body>
 </html>
