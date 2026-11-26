@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Citas del día | Centro Médico{% endblock %}
+
+{% block content %}
+<section class="container py-4">
+    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start gap-3 mb-4">
+        <div>
+            <h1 class="mb-1">Citas del día</h1>
+            <p class="text-secondary mb-0">{{ today }}</p>
+        </div>
+        <a href="{{ url_for('appointments.new_appointment') }}" class="btn btn-primary">Agendar cita</a>
+    </div>
+
+    <div class="card">
+        <div class="card-header d-flex align-items-center justify-content-between">
+            <h2 class="h6 mb-0">Total de citas</h2>
+            <span class="badge rounded-pill text-bg-primary">{{ appointments|length }}</span>
+        </div>
+
+        {% if appointments %}
+        <div class="table-responsive">
+            <table class="table table-striped align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th scope="col">Hora</th>
+                        <th scope="col">Paciente</th>
+                        <th scope="col">Médico</th>
+                        <th scope="col">Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for appointment in appointments %}
+                    {% set passed = appointment.hora < current_time %}
+                    <tr>
+                        <th scope="row"><time datetime="{{ appointment.hora }}">{{ appointment.hora }}</time></th>
+                        <td>{{ appointment.patient_name or 'Paciente no disponible' }}</td>
+                        <td>{{ appointment.doctor_name or 'Médico no disponible' }}</td>
+                        <td>
+                            <span class="badge {{ 'text-bg-secondary' if passed else 'text-bg-primary' }}">
+                                {{ 'Pasada' if passed else 'Pendiente' }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="card-body">
+            <p class="mb-0 text-secondary">No hay citas programadas para hoy.</p>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

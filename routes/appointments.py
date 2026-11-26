@@ -1,4 +1,4 @@
-from datetime import date, time
+from datetime import date, datetime, time, timedelta, timezone
 
 from bson import ObjectId
 from flask import Blueprint, flash, redirect, render_template, request, url_for
@@ -10,6 +10,40 @@ appointments_bp = Blueprint("appointments", __name__)
 db = dbConnection()
 OPENING_TIME = time(8)
 CLOSING_TIME = time(18)
+HOSPITAL_TIMEZONE = timezone(timedelta(hours=-4), "America/La_Paz")
+
+
+@appointments_bp.route("/citas")
+def list_today_appointments():
+    now = datetime.now(HOSPITAL_TIMEZONE)
+    appointments = list(db["appointments"].aggregate([
+        {"$match": {"fecha": now.date().isoformat()}},
+        {"$sort": {"hora": 1, "_id": 1}},
+        {"$lookup": {
+            "from": "patients",
+            "localField": "paciente_id",
+            "foreignField": "_id",
+            "as": "patient",
+        }},
+        {"$lookup": {
+            "from": "doctors",
+            "localField": "medico_id",
+            "foreignField": "_id",
+            "as": "doctor",
+        }},
+        {"$project": {
+            "_id": 0,
+            "hora": 1,
+            "patient_name": {"$arrayElemAt": ["$patient.nombre", 0]},
+            "doctor_name": {"$arrayElemAt": ["$doctor.nombre", 0]},
+        }},
+    ]))
+    return render_template(
+        "appointments/today.html",
+        appointments=appointments,
+        today=now.strftime("%d/%m/%Y"),
+        current_time=now.strftime("%H:%M"),
+    )
 
 
 @appointments_bp.route("/citas/nueva", methods=["GET", "POST"])

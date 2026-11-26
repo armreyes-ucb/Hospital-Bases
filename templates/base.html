@@ -21,7 +21,11 @@
                            href="{{ url_for('patients.list_patients') }}">Pacientes</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link{% if request.blueprint == 'appointments' %} active{% endif %}"
+                        <a class="nav-link{% if request.endpoint == 'appointments.list_today_appointments' %} active{% endif %}"
+                           href="{{ url_for('appointments.list_today_appointments') }}">Citas del día</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link{% if request.endpoint == 'appointments.new_appointment' %} active{% endif %}"
                            href="{{ url_for('appointments.new_appointment') }}">Agendar cita</a>
                     </li>
                 </ul>
