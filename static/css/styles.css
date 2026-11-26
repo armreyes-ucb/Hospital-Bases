@@ -1,0 +1,206 @@
+:root {
+    color-scheme: light;
+    --ink: #172b4d;
+    --muted: #667085;
+    --brand: #176b87;
+    --brand-dark: #10556d;
+    --surface: #ffffff;
+    --canvas: #f4f7fa;
+    --line: #e5ebf0;
+}
+
+body {
+    min-height: 100vh;
+    color: var(--ink);
+    background: var(--canvas);
+    font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.app-navbar {
+    background: #123b52;
+    box-shadow: 0 2px 12px rgb(18 59 82 / 12%);
+}
+
+.app-navbar .navbar-brand {
+    letter-spacing: -0.02em;
+}
+
+.app-navbar .nav-link {
+    color: rgb(255 255 255 / 82%);
+}
+
+.app-navbar .nav-link:hover,
+.app-navbar .nav-link:focus {
+    color: #fff;
+}
+
+.app-main {
+    min-height: calc(100vh - 56px);
+}
+
+.page-title {
+    color: var(--ink);
+    font-size: clamp(1.8rem, 3vw, 2.35rem);
+    font-weight: 700;
+    letter-spacing: -0.04em;
+}
+
+.eyebrow {
+    color: var(--brand);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+}
+
+.btn-primary {
+    border-color: var(--brand);
+    background-color: var(--brand);
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+    border-color: var(--brand-dark);
+    background-color: var(--brand-dark);
+}
+
+.stat-card,
+.search-card,
+.content-card,
+.form-card {
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: var(--surface);
+    box-shadow: 0 8px 24px rgb(23 43 77 / 4%);
+}
+
+.stat-card,
+.search-card {
+    padding: 1.25rem;
+}
+
+.stat-label {
+    display: block;
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+
+.stat-value {
+    display: block;
+    margin-top: 0.25rem;
+    color: var(--brand);
+    font-size: 2rem;
+    line-height: 1.2;
+}
+
+.search-card .input-group-text {
+    color: var(--muted);
+    background: #fff;
+}
+
+.content-card,
+.form-card {
+    overflow: hidden;
+}
+
+.form-card {
+    max-width: 760px;
+    padding: clamp(1rem, 4vw, 2rem);
+}
+
+.section-title {
+    color: var(--ink);
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.patient-table thead th {
+    padding: 0.9rem 1rem;
+    color: #58677c;
+    background: #f8fafc;
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.patient-table tbody td {
+    padding: 1rem;
+    border-color: var(--line);
+    white-space: nowrap;
+}
+
+.identifier {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+    background: #eef5f8;
+    color: #245b70;
+    font-variant-numeric: tabular-nums;
+}
+
+.empty-state {
+    padding: 3.5rem 1.25rem;
+    text-align: center;
+}
+
+.empty-icon {
+    display: grid;
+    width: 56px;
+    height: 56px;
+    margin: 0 auto 1rem;
+    place-items: center;
+    border-radius: 50%;
+    background: #eaf3f6;
+    color: var(--brand);
+    font-size: 1.8rem;
+}
+
+.back-link {
+    color: var(--brand);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.back-link:hover {
+    color: var(--brand-dark);
+    text-decoration: underline;
+}
+
+.required-mark {
+    color: #b42318;
+}
+
+.form-control:focus {
+    border-color: #67a7bb;
+    box-shadow: 0 0 0 0.2rem rgb(23 107 135 / 14%);
+}
+
+.pagination {
+    gap: 0.25rem;
+}
+
+.pagination .page-link {
+    border-radius: 7px;
+    color: var(--brand);
+}
+
+.pagination .page-item.active .page-link {
+    border-color: var(--brand);
+    background-color: var(--brand);
+}
+
+@media (max-width: 575.98px) {
+    .app-navbar .container {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .app-navbar .navbar-nav {
+        margin-left: 0 !important;
+    }
+
+    .patient-table tbody td {
+        padding: 0.8rem;
+    }
+}
