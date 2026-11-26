@@ -20,10 +20,6 @@
                         <a class="nav-link{% if request.blueprint == 'patients' %} active{% endif %}"
                            href="{{ url_for('patients.list_patients') }}">Pacientes</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link{% if request.blueprint == 'products' %} active{% endif %}"
-                           href="{{ url_for('products.home') }}">Productos</a>
-                    </li>
                 </ul>
             </div>
         </div>

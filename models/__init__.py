@@ -1,3 +1,3 @@
-from .product import Product
+from .patient import Patient
 
-__all__ = ["Product"]
+__all__ = ["Patient"]

@@ -50,8 +50,8 @@ def _validate_patient_form(form, exclude_id=None):
         return values, "El nombre debe tener entre 3 y 120 caracteres"
     if not re.fullmatch(r"\d{8}", dni):
         return values, "El DNI debe contener exactamente 8 dígitos"
-    if not re.fullmatch(r"\d{9}", telefono):
-        return values, "El teléfono debe contener exactamente 9 dígitos"
+    if not re.fullmatch(r"\d{8}", telefono):
+        return values, "El teléfono debe contener exactamente 8 dígitos"
 
     try:
         birth_date = date.fromisoformat(fecha_nacimiento)
