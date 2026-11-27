@@ -27,6 +27,7 @@
                         <th scope="col">Paciente</th>
                         <th scope="col">Médico</th>
                         <th scope="col">Estado</th>
+                        <th scope="col">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -41,10 +42,37 @@
                                 {{ 'Pasada' if passed else 'Pendiente' }}
                             </span>
                         </td>
+                        <td>
+                            <button type="button" class="btn btn-sm btn-outline-danger"
+                                    data-bs-toggle="modal" data-bs-target="#cancel-appointment-modal">
+                                Cancelar cita
+                            </button>
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
+        </div>
+        <div class="modal fade" id="cancel-appointment-modal" tabindex="-1"
+             aria-labelledby="cancel-appointment-title" aria-describedby="cancel-appointment-description"
+             aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2 class="modal-title fs-5" id="cancel-appointment-title">Cancelar cita</h2>
+                    </div>
+                    <div class="modal-body" id="cancel-appointment-description">
+                        <p>¿Confirmas que quieres cancelar esta cita?</p>
+                        <p class="mb-0 text-secondary">La cancelación aún no está habilitada.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Volver</button>
+                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">
+                            Confirmar cancelación
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
         {% else %}
         <div class="card-body">
